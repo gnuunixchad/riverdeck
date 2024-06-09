@@ -1,6 +1,6 @@
 .{
     .name = "rivercarro",
-    .version = "0.5.0",
+    .version = "0.6.0-dev",
     .dependencies = .{
         .@"zig-wayland" = .{
             .url = "https://codeberg.org/ifreund/zig-wayland/archive/v0.2.0.tar.gz",
