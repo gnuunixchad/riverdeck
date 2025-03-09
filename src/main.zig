@@ -134,7 +134,7 @@ const Output = struct {
             .namespace_in_use => fatal("namespace 'rivercarro' already in use.", .{}),
 
             .user_command => |ev| {
-                var it = mem.tokenize(u8, mem.span(ev.command), " ");
+                var it = mem.tokenizeSequence(u8, mem.span(ev.command), " ");
                 const active_cfg = output.get_cfg(output.user_command_tags);
                 const raw_cmd = it.next() orelse {
                     log.err("not enough arguments", .{});
@@ -535,9 +535,9 @@ fn registry_listener(registry: *wl.Registry, event: wl.Registry.Event, context: 
 fn registry_event(context: *Context, registry: *wl.Registry, event: wl.Registry.Event) !void {
     switch (event) {
         .global => |ev| {
-            if (mem.orderZ(u8, ev.interface, river.LayoutManagerV3.getInterface().name) == .eq) {
+            if (mem.orderZ(u8, ev.interface, river.LayoutManagerV3.interface.name) == .eq) {
                 context.layout_manager = try registry.bind(ev.name, river.LayoutManagerV3, 2);
-            } else if (mem.orderZ(u8, ev.interface, wl.Output.getInterface().name) == .eq) {
+            } else if (mem.orderZ(u8, ev.interface, wl.Output.interface.name) == .eq) {
                 const wl_output = try registry.bind(ev.name, wl.Output, 4);
                 errdefer wl_output.release();
 

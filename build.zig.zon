@@ -1,11 +1,12 @@
 .{
-    .name = "rivercarro",
+    .name = .rivercarro,
     .version = "0.6.0-dev",
     .dependencies = .{
-        .@"zig-wayland" = .{
-            .url = "https://codeberg.org/ifreund/zig-wayland/archive/v0.2.0.tar.gz",
-            .hash = "1220687c8c47a48ba285d26a05600f8700d37fc637e223ced3aa8324f3650bf52242",
+        .wayland = .{
+            .url = "https://codeberg.org/ifreund/zig-wayland/archive/v0.3.0.tar.gz",
+            .hash = "wayland-0.3.0-lQa1kjPIAQDmhGYpY-zxiRzQJFHQ2VqhJkQLbKKdt5wl",
         },
     },
     .paths = .{""},
+    .fingerprint = 0xded41bcbe8fb50ac,
 }
