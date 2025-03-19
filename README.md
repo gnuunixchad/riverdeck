@@ -15,7 +15,7 @@ Compared to _rivertile_, _rivercarro_ adds:
 
 ## Building
 
-Same requirements as **[river]**, use [zig] 0.13, if **[river]** and
+Same requirements as **[river]**, use [zig] 0.14, if **[river]** and
 _rivertile_ works on your machine you shouldn't have any problems.
 
 Build, `e.g.`
