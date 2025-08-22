@@ -41,11 +41,10 @@ tasks:
       sudo ninja -C build/ install
       cd ..
 
-      wget -nv https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz
-      # Remove a lot of useless lines from tar output.
-      tar -xvf zig-linux-x86_64-0.14.0.tar.xz 1>/dev/null
-      sudo mv zig-linux-x86_64-0.14.0/zig /usr/bin/
-      sudo mv zig-linux-x86_64-0.14.0/lib /usr/lib/zig
+      wget -nv https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
+      tar -xf zig-x86_64-linux-0.15.1.tar.xz
+      sudo mv zig-x86_64-linux-0.15.1/zig /usr/bin/
+      sudo mv zig-x86_64-linux-0.15.1/lib /usr/lib/zig
 
       cd river
       sudo zig build --prefix /usr

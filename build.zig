@@ -36,10 +36,10 @@ pub fn build(b: *std.Build) !void {
             assert(commit_hash[0] == 'g');
 
             // Follow semantic versioning, e.g. 0.2.0-dev.42+d1cf95b
-            break :blk try std.fmt.allocPrintZ(b.allocator, version ++ ".{s}+{s}", .{
+            break :blk try std.fmt.allocPrintSentinel(b.allocator, version ++ ".{s}+{s}", .{
                 commit_count,
                 commit_hash[1..],
-            });
+            }, 0);
         } else {
             break :blk version;
         }
@@ -60,9 +60,11 @@ pub fn build(b: *std.Build) !void {
 
     const rivercarro = b.addExecutable(.{
         .name = "rivercarro",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     rivercarro.root_module.addOptions("build_options", options);

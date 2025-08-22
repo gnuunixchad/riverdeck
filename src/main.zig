@@ -95,7 +95,7 @@ const Config = struct {
 
 const Context = struct {
     layout_manager: ?*river.LayoutManagerV3 = null,
-    outputs: std.SinglyLinkedList(Output) = .{},
+    outputs: std.SinglyLinkedList = .{},
     initialized: bool = false,
 };
 
@@ -103,6 +103,8 @@ var cfg: Config = .{};
 var ctx: Context = .{};
 
 const Output = struct {
+    node: std.SinglyLinkedList.Node,
+
     wl_output: *wl.Output,
     name: u32,
 
@@ -425,6 +427,9 @@ const Output = struct {
 };
 
 pub fn main() !void {
+    var err_buffer: [1024]u8 = undefined;
+    var err_writer = std.fs.File.stderr().writer(&err_buffer);
+
     const res = flags.parser([*:0]const u8, &.{
         .{ .name = "h", .kind = .boolean },
         .{ .name = "version", .kind = .boolean },
@@ -438,17 +443,24 @@ pub fn main() !void {
         .{ .name = "width-ratio-centered", .kind = .boolean },
         .{ .name = "per-tag", .kind = .boolean },
     }).parse(std.os.argv[1..]) catch {
-        try std.io.getStdErr().writeAll(usage);
+        try err_writer.interface.writeAll(usage);
+        try err_writer.end();
         posix.exit(1);
     };
     if (res.args.len != 0) fatal_usage("Unknown option '{s}'", .{res.args[0]});
 
     if (res.flags.h) {
-        try io.getStdOut().writeAll(usage);
+        var buffer: [1024]u8 = undefined;
+        var writer = std.fs.File.stdout().writer(&buffer);
+        try writer.interface.writeAll(usage);
+        try writer.end();
         posix.exit(0);
     }
     if (res.flags.version) {
-        try io.getStdOut().writeAll(build_options.version ++ "\n");
+        var buffer: [1024]u8 = undefined;
+        var writer = std.fs.File.stdout().writer(&buffer);
+        try writer.interface.writeAll(build_options.version ++ "\n");
+        try writer.end();
         posix.exit(0);
     }
     if (res.flags.@"no-smart-gaps") {
@@ -509,9 +521,10 @@ pub fn main() !void {
 
     ctx.initialized = true;
 
-    var it = ctx.outputs.first;
+    var it: ?*std.SinglyLinkedList.Node = ctx.outputs.first;
     while (it) |node| : (it = node.next) {
-        try node.data.get_layout();
+        const output: *Output = @fieldParentPtr("node", @constCast(node));
+        try output.get_layout();
     }
 
     while (true) {
@@ -541,28 +554,29 @@ fn registry_event(context: *Context, registry: *wl.Registry, event: wl.Registry.
                 const wl_output = try registry.bind(ev.name, wl.Output, 4);
                 errdefer wl_output.release();
 
-                const node = try gpa.create(std.SinglyLinkedList(Output).Node);
-                errdefer gpa.destroy(node);
-
-                node.data = .{
+                const output = try gpa.create(Output);
+                errdefer gpa.destroy(output);
+                output.* = Output{
+                    .node = .{ .next = context.outputs.first },
                     .wl_output = wl_output,
                     .name = ev.name,
                 };
-                try node.data.cfgs.put(gpa, 0, cfg);
+                try output.cfgs.put(gpa, 0, cfg);
 
-                if (ctx.initialized) try node.data.get_layout();
-                context.outputs.prepend(node);
+                if (ctx.initialized) try output.get_layout();
+                context.outputs.prepend(&output.node);
             }
         },
         .global_remove => |ev| {
             var it = context.outputs.first;
             while (it) |node| : (it = node.next) {
-                if (node.data.name == ev.name) {
-                    node.data.wl_output.release();
-                    node.data.layout.destroy();
-                    node.data.cfgs.deinit(gpa);
+                const output: *Output = @fieldParentPtr("node", @constCast(node));
+                if (output.name == ev.name) {
+                    output.wl_output.release();
+                    output.layout.destroy();
+                    output.cfgs.deinit(gpa);
                     context.outputs.remove(node);
-                    gpa.destroy(node);
+                    gpa.destroy(output);
                     break;
                 }
             }
@@ -577,6 +591,9 @@ fn fatal(comptime format: []const u8, args: anytype) noreturn {
 
 fn fatal_usage(comptime format: []const u8, args: anytype) noreturn {
     log.err(format, args);
-    std.io.getStdErr().writeAll(usage) catch {};
+    var buffer: [1024]u8 = undefined;
+    var writer = std.fs.File.stdout().writer(&buffer);
+    writer.interface.writeAll(usage) catch {};
+    writer.end() catch {};
     posix.exit(1);
 }
