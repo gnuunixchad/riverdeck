@@ -532,15 +532,23 @@ const Output = struct {
                         const name = std.fmt.bufPrintZ(&buf, "[{}]", .{sec_count}) catch "?";
                         break :blk name;
                     }
+                } else if (active_cfg.main_location == .monocle) blk: {
+                    if (ev.view_count == 1) {
+                        break :blk "[M]";
+                    } else {
+                        var buf: [32]u8 = undefined;
+                        const name = std.fmt.bufPrintZ(&buf, "[{}]", .{ev.view_count}) catch "?";
+                        break :blk name;
+                    }
                 } else switch (active_cfg.main_location) {
                     .left => "left",
                     .right => "right",
                     .top => "top",
                     .bottom => "bottom",
-                    .monocle => "monocle",
                     .grid => "HHH",
                     // deck is handled above, so this is unreachable
                     .deck => unreachable,
+                    .monocle => unreachable,
                 };
 
                 layout.commit(layout_name, ev.serial);
