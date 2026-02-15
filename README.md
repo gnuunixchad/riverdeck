@@ -3,9 +3,11 @@
 A slightly modified version of [rivercarro], which is a slightly modifed version of _rivertile_ layout generator for
 **[river-classic]**
 
-Compared to _rivertile_, _riverdeck_ adds:
-
+Compared to _rivercarro_, _riverdeck_ adds:
 -   Deck layout, master window on left, while stack windows overlap on right.
+
+Compared to _rivertile_, _rivercarro_ adds:
+
 -   Monocle layout, views will takes all the usable area on the screen.
 -   Gaps instead of padding around views or layout area.
 -   Modify gaps size at runtime.
