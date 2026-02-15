@@ -1,4 +1,4 @@
-# Riverdeck
+# <img src="./misc/riverdeck-repo.png" width="24"/> riverdeck
 
 A slightly modified version of [rivercarro], which is a slightly modifed version of _rivertile_ layout generator for
 **[river-classic]**
