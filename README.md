@@ -3,6 +3,8 @@
 A slightly modified version of [rivercarro], which is a slightly modifed version of _rivertile_ layout generator for
 **[river-classic]**
 
+riverdeck is the default layout generator in [my build of river-classic](https://codeberg.org/unixchad/river-classic)
+
 Compared to _rivercarro_, _riverdeck_ adds:
 -   Deck layout, master window on left, while stack windows overlap on right.
 
