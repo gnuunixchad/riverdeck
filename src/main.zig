@@ -50,7 +50,8 @@ const usage =
     \\  -outer-gaps     Set the gaps around the edge of the layout area in
     \\                  pixels. (Default 6)
     \\  -main-location  Set the initial location of the main area in the
-    \\                  layout. (Default left)
+    \\                  layout. (Default left) Can be: top, right, bottom,
+    \\                  left, monocle, deck
     \\  -main-count     Set the initial number of views in the main area of the
     \\                  layout. (Default 1)
     \\  -main-ratio     Set the initial ratio of main area to total layout
@@ -79,6 +80,7 @@ const Location = enum {
     bottom,
     left,
     monocle,
+    deck,
 };
 
 const Config = struct {
@@ -273,6 +275,7 @@ const Output = struct {
                     },
                 }
             },
+
             .user_command_tags => |ev| {
                 output.user_command_tags = ev.tags;
             },
@@ -284,7 +287,9 @@ const Output = struct {
                 const main_count = @min(active_cfg.main_count, @as(u31, @truncate(ev.view_count)));
                 const sec_count = @as(u31, @truncate(ev.view_count)) -| main_count;
 
-                const only_one_view = ev.view_count == 1 or active_cfg.main_location == .monocle;
+                const only_one_view = ev.view_count == 1 or
+                    active_cfg.main_location == .monocle or
+                    active_cfg.main_location == .deck;
 
                 // Don't add gaps if there is only one view.
                 if (only_one_view and cfg.smart_gaps) {
@@ -296,14 +301,14 @@ const Output = struct {
                 }
 
                 const usable_w = switch (active_cfg.main_location) {
-                    .left, .right, .monocle => @as(
+                    .left, .right, .monocle, .deck => @as(
                         u31,
                         @intFromFloat(@as(f64, @floatFromInt(ev.usable_width)) * active_cfg.width_ratio),
                     ) -| (2 *| cfg.outer_gaps),
                     .top, .bottom => @as(u31, @truncate(ev.usable_height)) -| (2 *| cfg.outer_gaps),
                 };
                 const usable_h = switch (active_cfg.main_location) {
-                    .left, .right, .monocle => @as(u31, @truncate(ev.usable_height)) -| (2 *| cfg.outer_gaps),
+                    .left, .right, .monocle, .deck => @as(u31, @truncate(ev.usable_height)) -| (2 *| cfg.outer_gaps),
                     .top, .bottom => @as(
                         u31,
                         @intFromFloat(@as(f64, @floatFromInt(ev.usable_width)) * active_cfg.width_ratio),
@@ -323,10 +328,27 @@ const Output = struct {
                 if (active_cfg.main_location == .monocle) {
                     main_w = usable_w;
                     main_h = usable_h;
-
                     sec_w = usable_w;
                     sec_h = usable_h;
+                } else if (active_cfg.main_location == .deck) {
+                    // deck layout: master on left, stack windows overlap on right
+                    if (sec_count > 0) {
+                        main_w = if (main_count > 0)
+                            @as(u31, @intFromFloat(active_cfg.main_ratio * @as(f64, @floatFromInt(usable_w))))
+                        else
+                            0;
+                        main_h = if (main_count > 0) usable_h / main_count else 0;
+                        main_h_rem = if (main_count > 0) usable_h % main_count else 0;
+
+                        sec_w = usable_w - main_w;
+                        sec_h = usable_h;  // Deck windows use full height
+                    } else {
+                        main_w = usable_w;
+                        main_h = usable_h / main_count;
+                        main_h_rem = usable_h % main_count;
+                    }
                 } else {
+                    // standard tiling layouts
                     if (sec_count > 0) {
                         main_w = @as(u31, @intFromFloat(active_cfg.main_ratio * @as(f64, @floatFromInt(usable_w))));
                         main_h = usable_h / main_count;
@@ -354,7 +376,29 @@ const Output = struct {
                         y = 0;
                         width = main_w;
                         height = main_h;
+                    } else if (active_cfg.main_location == .deck) {
+                        if (i < main_count) {
+                            // Master clients stacked vertically on the left
+                            x = 0;
+                            y = (i * main_h) + if (i > 0) cfg.inner_gaps + main_h_rem else 0;
+                            // Ensure we don't subtract more than available
+                            const gap_adjust = if (sec_count > 0)
+                                @divFloor(cfg.inner_gaps, 2)
+                            else
+                                0;
+                            width = if (main_w > gap_adjust) main_w - gap_adjust else main_w;
+                            height = (main_h + if (i == 0) main_h_rem else 0) -
+                                (if (i > 0) cfg.inner_gaps else 0);
+                        } else {
+                            // Deck clients: all overlap in the same space on the right
+                            const gap_offset = @divFloor(cfg.inner_gaps, 2);
+                            x = main_w + gap_offset;
+                            y = 0;
+                            width = if (sec_w > gap_offset) sec_w - gap_offset else sec_w;
+                            height = sec_h;
+                        }
                     } else {
+                        // standard tiling layouts
                         if (i < main_count) {
                             x = 0;
                             y = (i * main_h) + if (i > 0) cfg.inner_gaps + main_h_rem else 0;
@@ -411,16 +455,34 @@ const Output = struct {
                             height,
                             ev.serial,
                         ),
+                        .deck => layout.pushViewDimensions(
+                            x +| cfg.outer_gaps,
+                            y +| cfg.outer_gaps,
+                            width,
+                            height,
+                            ev.serial,
+                        ),
                     }
                 }
+                const layout_name = if (active_cfg.main_location == .deck) blk: {
+                    if (ev.view_count == 1) {
+                        break :blk "[D]";
+                    } else {
+                        var buf: [32]u8 = undefined;
+                        const name = std.fmt.bufPrintZ(&buf, "[{}]", .{sec_count}) catch "?";
+                        break :blk name;
+                    }
+                } else switch (active_cfg.main_location) {
+                    .left => "left",
+                    .right => "right",
+                    .top => "top",
+                    .bottom => "bottom",
+                    .monocle => "monocle",
+                    // deck is handled above, so this is unreachable
+                    .deck => unreachable,
+                };
 
-                switch (active_cfg.main_location) {
-                    .left => layout.commit("left", ev.serial),
-                    .right => layout.commit("right", ev.serial),
-                    .top => layout.commit("top", ev.serial),
-                    .bottom => layout.commit("bottom", ev.serial),
-                    .monocle => layout.commit("monocle", ev.serial),
-                }
+                layout.commit(layout_name, ev.serial);
             },
         }
     }
