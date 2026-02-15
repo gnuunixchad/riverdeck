@@ -6,8 +6,11 @@ A slightly modified version of [rivercarro], which is a slightly modifed version
 riverdeck is the default layout generator in [my build of river-classic](https://codeberg.org/unixchad/river-classic)
 
 Compared to _rivercarro_, _riverdeck_ adds:
--   Deck layout, master window on left, while stack windows overlap on right.
--   Grid layout, arrange windows in a grid that fills the space evenly.
+-   Deck layout `[D]`, master window on left, while stack windows overlap on right.
+-   Grid layout `HHH`, arrange windows in a grid that fills the space evenly.
+-   Monocle layout with dynamic name
+    + display `[M]` when there's no visible windows
+    + display `[N]` when there's any windows, where `N` is the window count.
 
 Compared to _rivertile_, _rivercarro_ adds:
 
