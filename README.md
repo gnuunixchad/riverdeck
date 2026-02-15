@@ -49,6 +49,8 @@ riverctl map normal $mod Down  send-layout-cmd riverdeck "main-location bottom"
 riverctl map normal $mod Left  send-layout-cmd riverdeck "main-location left"
 # And for monocle
 riverctl map normal $mod M     send-layout-cmd riverdeck "main-location monocle"
+# And for deck
+riverctl map normal $mod M     send-layout-cmd riverdeck "main-location deck"
 # Cycle through layout
 riverctl map normal $mod W     send-layout-cmd riverdeck "main-location-cycle left,monocle"
 
