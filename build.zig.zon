@@ -1,6 +1,6 @@
 .{
-    .name = .rivercarro,
-    .version = "0.6.0",
+    .name = .riverdeck,
+    .version = "0.7.0",
     .dependencies = .{
         .wayland = .{
             .url = "https://codeberg.org/ifreund/zig-wayland/archive/v0.4.0.tar.gz",
@@ -8,5 +8,5 @@
         },
     },
     .paths = .{""},
-    .fingerprint = 0xded41bcbe8fb50ac,
+    .fingerprint = 0xcd8365115da7bbd6,
 }

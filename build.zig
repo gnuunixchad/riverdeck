@@ -5,12 +5,12 @@ const mem = std.mem;
 
 const Scanner = @import("wayland").Scanner;
 
-/// While a rivercarro release is in development, this string should contain
+/// While a riverdeck release is in development, this string should contain
 /// the version in development with the "-dev" suffix.  When a release is
 /// tagged, the "-dev" suffix should be removed for the commit that gets tagged.
 /// Directly after the tagged commit, the version should be bumped and the "-dev"
 /// suffix added.
-const version = "0.6.0";
+const version = "0.7.0";
 
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
@@ -58,8 +58,8 @@ pub fn build(b: *std.Build) !void {
     const wayland = b.createModule(.{ .root_source_file = scanner.result });
     const flags = b.createModule(.{ .root_source_file = b.path("common/flags.zig") });
 
-    const rivercarro = b.addExecutable(.{
-        .name = "rivercarro",
+    const riverdeck = b.addExecutable(.{
+        .name = "riverdeck",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
@@ -67,17 +67,17 @@ pub fn build(b: *std.Build) !void {
         }),
     });
 
-    rivercarro.root_module.addOptions("build_options", options);
+    riverdeck.root_module.addOptions("build_options", options);
 
-    rivercarro.linkLibC();
+    riverdeck.linkLibC();
 
-    rivercarro.root_module.addImport("wayland", wayland);
-    rivercarro.linkSystemLibrary("wayland-client");
+    riverdeck.root_module.addImport("wayland", wayland);
+    riverdeck.linkSystemLibrary("wayland-client");
 
-    rivercarro.root_module.addImport("flags", flags);
+    riverdeck.root_module.addImport("flags", flags);
 
-    rivercarro.pie = pie;
+    riverdeck.pie = pie;
 
-    b.installArtifact(rivercarro);
-    b.installFile("doc/rivercarro.1", "share/man/man1/rivercarro.1");
+    b.installArtifact(riverdeck);
+    b.installFile("doc/riverdeck.1", "share/man/man1/riverdeck.1");
 }

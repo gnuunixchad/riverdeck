@@ -30,12 +30,12 @@ const wayland = @import("wayland");
 const wl = wayland.client.wl;
 const river = wayland.client.river;
 
-const log = std.log.scoped(.rivercarro);
+const log = std.log.scoped(.riverdeck);
 
 const gpa = std.heap.c_allocator;
 
 const usage =
-    \\Usage: rivercarro [options...]
+    \\Usage: riverdeck [options...]
     \\
     \\  -h                    Print this help message and exit.
     \\  -version              Print the version number and exit.
@@ -43,7 +43,7 @@ const usage =
     \\  -per-tag              Remember configuration per tag
     \\  -width-ratio-centered Center views when used with width-ratio
     \\
-    \\  The following commands may also be sent to rivercarro at runtime
+    \\  The following commands may also be sent to riverdeck at runtime
     \\  via riverctl(1):
     \\
     \\  -inner-gaps     Set the gaps around views in pixels. (Default 6)
@@ -58,7 +58,7 @@ const usage =
     \\  -width-ratio    Set the ratio of the usable area width of the screen.
     \\                  (Default: 1.0)
     \\
-    \\  See rivercarro(1) man page for more documentation.
+    \\  See riverdeck(1) man page for more documentation.
     \\
 ;
 
@@ -127,13 +127,13 @@ const Output = struct {
     }
 
     fn get_layout(output: *Output) !void {
-        output.layout = try ctx.layout_manager.?.getLayout(output.wl_output, "rivercarro");
+        output.layout = try ctx.layout_manager.?.getLayout(output.wl_output, "riverdeck");
         output.layout.setListener(*Output, layout_listener, output);
     }
 
     fn layout_listener(layout: *river.LayoutV3, event: river.LayoutV3.Event, output: *Output) void {
         switch (event) {
-            .namespace_in_use => fatal("namespace 'rivercarro' already in use.", .{}),
+            .namespace_in_use => fatal("namespace 'riverdeck' already in use.", .{}),
 
             .user_command => |ev| {
                 var it = mem.tokenizeSequence(u8, mem.span(ev.command), " ");
