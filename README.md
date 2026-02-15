@@ -86,7 +86,7 @@ files for the licensing information.
 [isaac freund]: https://codeberg.org/ifreund
 [leon henrik plickat]: https://sr.ht/~leon_plickat/
 [rivercarro]: https://git.sr.ht/~novakane/rivercarro
-[novake]: https://git.sr.ht/~novakane
+[novakane]: https://git.sr.ht/~novakane
 [André Desgualdo Pereira]: https://codeberg.org/Kana
 [decklayout]: https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/decklayout
 [gnu general public license v3.0 or later]: COPYING
